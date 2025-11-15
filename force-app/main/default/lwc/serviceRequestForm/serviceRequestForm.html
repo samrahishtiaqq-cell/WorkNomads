@@ -1,0 +1,183 @@
+<template>
+    <lightning-card title="Create Service Request" icon-name="standard:case">
+        <div class="slds-var-m-around_medium">
+            <!-- Form Section -->
+            <template if:false={showSuccess}>
+                <lightning-input
+                    label="Customer Email"
+                    type="email"
+                    value={customerEmail}
+                    onchange={handleEmailChange}
+                    required
+                    message-when-value-missing="Email is required"
+                    message-when-type-mismatch="Please enter a valid email"
+                    class="slds-var-m-bottom_small">
+                </lightning-input>
+
+                <lightning-textarea
+                    label="Description"
+                    value={description}
+                    onchange={handleDescriptionChange}
+                    required
+                    message-when-value-missing="Description is required"
+                    max-length="32768"
+                    class="slds-var-m-bottom_small">
+                </lightning-textarea>
+
+                <lightning-combobox
+                    label="Priority"
+                    value={priority}
+                    placeholder="Select Priority"
+                    options={priorityOptions}
+                    onchange={handlePriorityChange}
+                    required
+                    message-when-value-missing="Priority is required"
+                    class="slds-var-m-bottom_small">
+                </lightning-combobox>
+
+                <!-- Error Message -->
+                <template if:true={errorMessage}>
+                    <div class="slds-var-m-top_small">
+                        <lightning-formatted-rich-text
+                            value={errorMessage}
+                            class="error-message">
+                        </lightning-formatted-rich-text>
+                    </div>
+                </template>
+
+                <!-- Submit Button -->
+                <div class="slds-var-m-top_medium">
+                    <lightning-button
+                        label="Submit Service Request"
+                        variant="brand"
+                        onclick={handleSubmit}
+                        disabled={isLoading}
+                        class="slds-var-m-right_small">
+                    </lightning-button>
+                    <lightning-button
+                        label="Clear"
+                        onclick={handleClear}
+                        disabled={isLoading}>
+                    </lightning-button>
+                </div>
+
+                <!-- Loading Spinner -->
+                <template if:true={isLoading}>
+                    <lightning-spinner
+                        alternative-text="Creating Service Request..."
+                        size="small">
+                    </lightning-spinner>
+                </template>
+            </template>
+
+            <!-- Success Message -->
+            <template if:true={showSuccess}>
+                <div class="success-container">
+                    <lightning-icon
+                        icon-name="action:approval"
+                        alternative-text="Success"
+                        size="large"
+                        class="success-icon">
+                    </lightning-icon>
+                    <h2 class="slds-text-heading_medium slds-var-m-top_medium">
+                        Service Request Created Successfully!
+                    </h2>
+                    <div class="slds-var-m-top_small">
+                        <p class="slds-text-body_regular">
+                            <strong>Record ID:</strong> 
+                            <lightning-formatted-text value={createdRecordId}></lightning-formatted-text>
+                        </p>
+                        <lightning-button
+                            label="View Record"
+                            variant="brand"
+                            onclick={handleViewRecord}
+                            class="slds-var-m-top_medium slds-var-m-right_small">
+                        </lightning-button>
+                        <lightning-button
+                            label="Create Another"
+                            onclick={handleCreateAnother}
+                            class="slds-var-m-top_medium">
+                        </lightning-button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+
+    <!-- Recent Service Requests Section -->
+    <template if:true={showRecentRequests}>
+        <lightning-card 
+            title="Recent Service Requests" 
+            icon-name="standard:recent"
+            class="slds-var-m-top_medium">
+            <div class="slds-var-m-around_medium">
+                <template if:true={recentRequests}>
+                    <template if:true={hasRecentRequests}>
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Service Request #">SR #</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Email">Email</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Priority">Priority</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Status">Status</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Created Date">Created</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={recentRequests} for:item="request">
+                                    <tr key={request.Id}>
+                                        <td>
+                                            <a onclick={handleNavigateToRecord} data-id={request.Id}>
+                                                {request.Name}
+                                            </a>
+                                        </td>
+                                        <td>{request.Customer_Email__c}</td>
+                                        <td>
+                                            <lightning-badge label={request.Priority__c}></lightning-badge>
+                                        </td>
+                                        <td>
+                                            <lightning-badge label={request.Status__c}></lightning-badge>
+                                        </td>
+                                        <td>
+                                            <lightning-formatted-date-time
+                                                value={request.CreatedDate}
+                                                year="numeric"
+                                                month="short"
+                                                day="2-digit"
+                                                hour="2-digit"
+                                                minute="2-digit">
+                                            </lightning-formatted-date-time>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template if:false={hasRecentRequests}>
+                        <p class="slds-text-align_center slds-var-p-around_medium">
+                            No service requests found.
+                        </p>
+                    </template>
+                </template>
+                
+                <!-- Error loading recent requests -->
+                <template if:true={recentRequestsError}>
+                    <div class="slds-text-color_error">
+                        Error loading recent requests: {recentRequestsError}
+                    </div>
+                </template>
+            </div>
+        </lightning-card>
+    </template>
+</template>
+
